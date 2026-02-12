@@ -1,0 +1,55 @@
+/* ==================== Floating Stars Animation ==================== */
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(100vh) translateX(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) translateX(50px);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(30px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.floating-star {
+  position: absolute;
+  left: var(--left);
+  top: var(--top);
+  font-size: var(--size);
+  animation: 
+    float-up var(--duration) ease-in forwards,
+    twinkle 2s ease-in-out infinite,
+    drift 4s ease-in-out infinite;
+  animation-delay: var(--delay);
+  filter: drop-shadow(0 0 6px rgba(100, 200, 255, 0.6));
+  pointer-events: none;
+}

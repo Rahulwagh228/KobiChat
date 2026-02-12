@@ -4,8 +4,8 @@ import "./globals.css";
 
 
 export const metadata: Metadata = {
-  title: "Chat App",
-  description: "This is chat app",
+  title: "Gobi App",
+  description: "This is Gobi app",
 };
 
 export default function RootLayout({

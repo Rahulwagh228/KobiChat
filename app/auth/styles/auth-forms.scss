@@ -1,0 +1,28 @@
+/* ==================== Auth Forms Shared Styles ==================== */
+
+@import './floating-stars.scss';
+
+/* Form Animations */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Form transitions are handled in auth-page.scss */

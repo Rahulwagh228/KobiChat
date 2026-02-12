@@ -1,0 +1,441 @@
+/* ==================== Auth Page Container ==================== */
+
+.auth-page-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ==================== Floating Stars Container ==================== */
+.floating-stars-container {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* ==================== Auth Content ==================== */
+.auth-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 420px;
+  padding: 0 20px;
+  animation: slideInUp 0.6s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-wrapper {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+  border-radius: 20px;
+  padding: 40px 32px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+/* ==================== Auth Header ==================== */
+.auth-header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeIn 0.8s ease 0.2s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.brand-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #64c8ff 0%, #a0e7e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+
+.brand-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ==================== Form Container ==================== */
+.form-container {
+  position: relative;
+  height: 600px;
+  perspective: 1000px;
+}
+
+.form-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: none;
+
+  &.login-active {
+    .login-form {
+      opacity: 1;
+      transform: translateX(0) rotateY(0);
+      pointer-events: all;
+      z-index: 2;
+    }
+
+    .signup-form {
+      opacity: 0;
+      transform: translateX(100%) rotateY(90deg);
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
+  &.signup-active {
+    .login-form {
+      opacity: 0;
+      transform: translateX(-100%) rotateY(-90deg);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .signup-form {
+      opacity: 1;
+      transform: translateX(0) rotateY(0);
+      pointer-events: all;
+      z-index: 2;
+    }
+  }
+}
+
+/* ==================== Auth Forms ==================== */
+.auth-form {
+  position: absolute;
+  width: 100%;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.login-form {
+  top: 0;
+  left: 0;
+}
+
+.signup-form {
+  top: 0;
+  left: 0;
+}
+
+/* ==================== Form Styles ==================== */
+.form-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+}
+
+.form-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 24px 0;
+}
+
+.error-message {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.5);
+  color: #ff6b6b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  animation: shake 0.5s ease;
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+}
+
+.form-group {
+  margin-bottom: 20px;
+  animation: slideInDown 0.5s ease backwards;
+
+  @keyframes slideInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(100, 200, 255, 0.05);
+  border: 1.5px solid rgba(100, 200, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  outline: none;
+  font-family: inherit;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &:focus {
+    background: rgba(100, 200, 255, 0.1);
+    border-color: rgba(100, 200, 255, 0.6);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ==================== Submit Button ==================== */
+.submit-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #64c8ff 0%, #a0e7e5 100%);
+  border: none;
+  border-radius: 10px;
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 24px rgba(100, 200, 255, 0.3);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(100, 200, 255, 0.4);
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* ==================== Button Loader ==================== */
+.btn-loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(26, 26, 26, 0.3);
+  border-top-color: #1a1a1a;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* ==================== Form Footer ==================== */
+.form-footer {
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.switch-btn {
+  background: none;
+  border: none;
+  color: #64c8ff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 0;
+  margin-left: 4px;
+
+  &:hover:not(:disabled) {
+    color: #a0e7e5;
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 480px) {
+  .auth-wrapper {
+    padding: 32px 24px;
+    border-radius: 16px;
+  }
+
+  .brand-title {
+    font-size: 28px;
+  }
+
+  .form-title {
+    font-size: 20px;
+  }
+
+  .form-container {
+    height: auto;
+    max-height: 600px;
+  }
+
+  .auth-form {
+    position: relative;
+  }
+
+  .form-input {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .submit-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .signup-form {
+    display: none;
+  }
+
+  .login-form {
+    display: block;
+  }
+
+  .form-wrapper.signup-active {
+    .signup-form {
+      display: block;
+    }
+
+    .login-form {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-content {
+    padding: 0 12px;
+  }
+
+  .auth-wrapper {
+    padding: 24px 16px;
+  }
+
+  .brand-title {
+    font-size: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* ==================== Dark Mode Enhancements ==================== */
+@media (prefers-reduced-motion: reduce) {
+  .auth-form,
+  .form-wrapper,
+  .auth-wrapper {
+    animation: none;
+    transition: none;
+  }
+
+  .form-input:focus {
+    box-shadow: none;
+  }
+
+  .submit-btn {
+    box-shadow: none;
+
+    &:hover {
+      box-shadow: none;
+    }
+  }
+}

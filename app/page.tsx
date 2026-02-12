@@ -4,6 +4,7 @@ const Page = () => {
   return (
     <div>
       Next js Page
+
     </div>
   )
 }
