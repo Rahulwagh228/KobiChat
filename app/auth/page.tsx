@@ -56,7 +56,7 @@ export default function AuthPage() {
         <div className="auth-wrapper">
           {/* Logo/Brand */}
           <div className="auth-header">
-            <h1 className="brand-title">Bono Chat</h1>
+            <h1 className="brand-title">Kobi Chat</h1>
             <p className="brand-subtitle">Connect & Share</p>
           </div>
 
