@@ -2,30 +2,83 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from './Components/Navbar';
-import Sidebar from './Components/Sidebar';
+import ChatList from './Components/ChatList';
 import ChatArea from './Components/ChatArea';
-import FloatingHearts from './Components/FloatingHearts';
+import NewChatInput from './Components/NewChatInput';
+import { Conversation } from './types/conversation';
+import { getUserConversations, createConversation } from '@/lib/chatService';
 
 export default function ChatPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showMobileList, setShowMobileList] = useState(true);
   const router = useRouter();
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
+  // Check authentication and load conversations
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
+    const checkAuth = async () => {
+      const authToken = localStorage.getItem('token');
+      if (!authToken) {
         router.push('/auth');
-      } else {
-        setIsAuthenticated(true);
+        return;
+      }
+
+      setIsAuthenticated(true);
+
+      try {
+        const chats = await getUserConversations(authToken);
+        setConversations(chats);
+        
+        // Auto-select first conversation if exists
+        if (chats.length > 0) {
+          setSelectedConversation(chats[0]);
+          setShowMobileList(false);
+        }
+      } catch (error) {
+        console.error('Failed to load conversations:', error);
+      } finally {
         setIsLoading(false);
       }
     };
 
     checkAuth();
   }, [router]);
+
+  const handleCreateChat = async (participantEmail: string): Promise<Conversation | null> => {
+    if (!token) return null;
+
+    try {
+      // Check if conversation already exists
+      const existingChat = conversations.find(
+        conv =>
+          conv.participantEmail.toLowerCase() === participantEmail.toLowerCase() ||
+          conv.participantName.toLowerCase() === participantEmail.toLowerCase()
+      );
+
+      if (existingChat) {
+        setSelectedConversation(existingChat);
+        setShowMobileList(false);
+        return existingChat;
+      }
+
+      // Create new conversation
+      const newConversation = await createConversation(
+        { participantEmail },
+        token
+      );
+
+      setConversations(prev => [newConversation, ...prev]);
+      setSelectedConversation(newConversation);
+      setShowMobileList(false);
+      return newConversation;
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+      return null;
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -40,9 +93,9 @@ export default function ChatPage() {
         alignItems: 'center', 
         justifyContent: 'center', 
         height: '100vh',
-        background: 'linear-gradient(135deg, #ffeef8 0%, #ffe6f0 50%, #ffcce5 100%)'
+        background: '#1a1a1a'
       }}>
-        <div style={{ fontSize: '16px', color: '#ff1493' }}>Loading...</div>
+        <div style={{ fontSize: '16px', color: '#808080' }}>Loading...</div>
       </div>
     );
   }
@@ -52,24 +105,52 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="chat-page-container">
-      {/* Floating Hearts Background */}
-      <div className="floating-hearts-container">
-        <FloatingHearts />
+    <div className="whatsapp-container">
+      {/* Sidebar */}
+      <div className={`sidebar-section ${showMobileList ? 'mobile-visible' : ''}`}>
+        {/* Header */}
+        <div className="sidebar-header">
+          <h1>Messages</h1>
+          <button 
+            className="logout-btn" 
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <svg fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        {/* New Chat Input */}
+        <NewChatInput 
+          onCreateChat={handleCreateChat}
+          existingChats={conversations}
+          isLoading={isLoading}
+        />
+
+        {/* Chat List */}
+        <ChatList
+          conversations={conversations}
+          selectedChatId={selectedConversation?.id || null}
+          onChatSelect={(id) => {
+            const chat = conversations.find(c => c.id === id);
+            setSelectedConversation(chat || null);
+            setShowMobileList(false);
+          }}
+          isLoading={isLoading}
+          onMobileClose={() => setShowMobileList(false)}
+        />
       </div>
 
-      {/* Navbar */}
-      <Navbar onMenuClick={() => setSidebarOpen(true)} />
-
-      {/* Sidebar */}
-      <Sidebar 
-        isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)}
-        onLogout={handleLogout}
-      />
-
-      {/* Main Chat Content */}
-      <ChatArea />
+      {/* Chat Area */}
+      <div className={`chat-section ${!showMobileList ? 'mobile-visible' : ''}`}>
+        <ChatArea 
+          selectedConversation={selectedConversation}
+          onBackClick={() => setShowMobileList(true)}
+        />
+      </div>
     </div>
   );
 }
+

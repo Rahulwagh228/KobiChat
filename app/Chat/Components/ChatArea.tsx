@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSocket } from '@/lib/SocketHandler';
 import { Message as SocketMessage } from '@/lib/SocketHandler/types';
+import { getConversationMessages } from '@/lib/chatService';
+import { Conversation, Message as ChatMessage } from '../types/conversation';
 
 interface Message {
   id: string;
@@ -13,34 +15,18 @@ interface Message {
   senderName?: string;
 }
 
-export default function ChatArea() {
+interface ChatAreaProps {
+  selectedConversation: Conversation | null;
+  onBackClick?: () => void;
+}
+
+export default function ChatArea({ selectedConversation, onBackClick }: ChatAreaProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: "Hey! How are you doing today? 💕",
-      sender: 'other',
-      timestamp: '10:30 AM',
-      senderName: 'Other User'
-    },
-    {
-      id: '2',
-      text: "I'm doing great! Missing you though ❤️",
-      sender: 'user',
-      timestamp: '10:32 AM',
-      senderName: 'You'
-    },
-    {
-      id: '3',
-      text: "Can't wait to see you again soon 😊",
-      sender: 'other',
-      timestamp: '10:33 AM',
-      senderName: 'Other User'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [inputValue, setInputValue] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   // Initialize socket connection
@@ -48,26 +34,65 @@ export default function ChatArea() {
     onMessageReceive: (receivedMessage: SocketMessage) => {
       console.log('📨 New message received:', receivedMessage);
       
-      // Add received message to chat
-      const newMessage: Message = {
-        id: receivedMessage.id,
-        text: receivedMessage.text,
-        sender: 'other',
-        timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        senderId: receivedMessage.senderId,
-        senderName: receivedMessage.senderName
-      };
-      
-      setMessages(prev => [...prev, newMessage]);
+      // Only add message if it's for the current conversation
+      if (receivedMessage.conversationId === selectedConversation?.id) {
+        const newMessage: Message = {
+          id: receivedMessage.id,
+          text: receivedMessage.text,
+          sender: 'other',
+          timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          senderId: receivedMessage.senderId,
+          senderName: receivedMessage.senderName
+        };
+        
+        setMessages(prev => [...prev, newMessage]);
+      }
     },
     onError: (error) => {
       console.error('Socket error:', error);
-      alert('Connection error. Please refresh the page.');
     }
   });
+
+  // Load messages when conversation changes
+  useEffect(() => {
+    if (!selectedConversation) {
+      setMessages([]);
+      return;
+    }
+
+    const loadMessages = async () => {
+      if (!token) return;
+      setIsLoadingMessages(true);
+      try {
+        const fetchedMessages = await getConversationMessages(
+          selectedConversation.id,
+          token
+        );
+        // Convert fetched messages to Message format
+        const formattedMessages: Message[] = (fetchedMessages || []).map((msg: any) => ({
+          id: msg.id,
+          text: msg.text,
+          sender: msg.senderId === localStorage.getItem('userId') ? 'user' : 'other',
+          timestamp: new Date(msg.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          senderId: msg.senderId,
+          senderName: msg.senderName
+        }));
+        setMessages(formattedMessages);
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+
+    loadMessages();
+  }, [selectedConversation, token]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -75,15 +100,15 @@ export default function ChatArea() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!inputValue.trim() || !isConnected || isSending) return;
+    if (!inputValue.trim() || !isConnected || isSending || !selectedConversation) return;
 
     const messageText = inputValue.trim();
     setInputValue('');
     setIsSending(true);
 
     try {
-      // Send message via socket
-      await sendMessage(messageText);
+      // Send message via socket with conversation ID
+      await sendMessage(messageText, selectedConversation.participantId, selectedConversation.id);
 
       // Add message to local state immediately (optimistic update)
       const newMessage: Message = {
@@ -117,11 +142,23 @@ export default function ChatArea() {
   };
 
   // Show loading state while socket is initializing
-  if (isLoading) {
+  if (!selectedConversation) {
+    return (
+      <div className="chat-area empty-chat">
+        <div className="empty-chat-content">
+          <div className="empty-chat-icon">💬</div>
+          <h2>Select a chat to start messaging</h2>
+          <p>Choose a conversation from the list or start a new one</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || isLoadingMessages) {
     return (
       <div className="chat-area">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-          <p style={{ color: '#ff69b4' }}>Connecting to chat...</p>
+          <p style={{ color: '#a0a0a0' }}>Loading...</p>
         </div>
       </div>
     );
@@ -129,12 +166,19 @@ export default function ChatArea() {
 
   return (
     <div className="chat-area">
-      {/* Connection Status */}
-      <div className={`connection-status ${isConnected ? 'connected' : 'disconnected'}`}>
-        <span className="status-indicator"></span>
-        <span className="status-text">
-          {isConnected ? 'Connected' : 'Connecting...'}
-        </span>
+      {/* Chat Header */}
+      <div className="chat-header">
+        {onBackClick && (
+          <button className="back-button" onClick={onBackClick} aria-label="Back to chats">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        )}
+        <div className="chat-header-info">
+          <h2 className="chat-header-name">{selectedConversation.participantName}</h2>
+          <p className="chat-header-email">{selectedConversation.participantEmail}</p>
+        </div>
       </div>
 
       {/* Messages Container */}
@@ -159,7 +203,7 @@ export default function ChatArea() {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Say something sweet... 💕"
+          placeholder="Type a message..."
           className="message-input"
           rows={1}
           disabled={!isConnected || isSending}
