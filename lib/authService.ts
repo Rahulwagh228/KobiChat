@@ -29,17 +29,20 @@ class AuthService {
   private loginEndpoint: string;
 
   constructor() {
-    this.apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
-    this.signupEndpoint = process.env.NEXT_PUBLIC_SIGNUP_ENDPOINT || '/auth/register';
-    this.loginEndpoint = process.env.NEXT_PUBLIC_LOGIN_ENDPOINT || '/auth/login';
+    this.apiBase =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+    this.signupEndpoint =
+      process.env.NEXT_PUBLIC_SIGNUP_ENDPOINT || "/auth/register";
+    this.loginEndpoint =
+      process.env.NEXT_PUBLIC_LOGIN_ENDPOINT || "/auth/login";
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const response = await fetch(`${this.apiBase}${this.loginEndpoint}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
       });
@@ -47,7 +50,7 @@ class AuthService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || "Login failed");
       }
 
       return data;
@@ -59,9 +62,9 @@ class AuthService {
   async signup(userData: SignupData): Promise<AuthResponse> {
     try {
       const response = await fetch(`${this.apiBase}${this.signupEndpoint}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(userData),
       });
@@ -69,7 +72,7 @@ class AuthService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Signup failed');
+        throw new Error(data.message || "Signup failed");
       }
 
       return data;
@@ -79,20 +82,20 @@ class AuthService {
   }
 
   storeToken(token: string): void {
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
   }
 
   getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('token');
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("token");
     }
     return null;
   }
 
   removeToken(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
   }
 

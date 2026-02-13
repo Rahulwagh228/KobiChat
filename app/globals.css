@@ -326,6 +326,54 @@ body {
   overflow: hidden;
 }
 
+/* ==================== Connection Status ==================== */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(255, 105, 180, 0.15);
+  font-size: 12px;
+  color: rgba(51, 51, 51, 0.7);
+  transition: all 0.3s ease;
+}
+
+.connection-status.connected {
+  background: rgba(76, 175, 80, 0.08);
+  color: #4caf50;
+}
+
+.connection-status.disconnected {
+  background: rgba(244, 67, 54, 0.08);
+  color: #f44336;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #999;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.connection-status.connected .status-indicator {
+  background: #4caf50;
+}
+
+.connection-status.disconnected .status-indicator {
+  background: #f44336;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 .messages-container {
   flex: 1;
   overflow-y: auto;
@@ -427,6 +475,10 @@ body {
   background: linear-gradient(180deg, rgba(255, 105, 180, 0.1) 0%, rgba(255, 192, 203, 0.1) 100%);
   border-top: 2px solid rgba(255, 105, 180, 0.2);
   flex-shrink: 0;
+  position: relative;
+  z-index: 50;
+  /* Stick to bottom of chat area */
+  margin-top: auto;
 }
 
 .message-input {
@@ -450,6 +502,12 @@ body {
   background: rgba(255, 255, 255, 0.95);
 }
 
+.message-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.6);
+}
+
 .message-input::placeholder {
   color: rgba(255, 105, 180, 0.6);
 }
@@ -468,20 +526,53 @@ body {
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
   flex-shrink: 0;
+  animation: slideInRight 0.3s ease;
 }
 
-.send-btn:hover {
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.send-btn:hover:not(:disabled) {
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(255, 20, 147, 0.4);
 }
 
-.send-btn:active {
+.send-btn:active:not(:disabled) {
   transform: scale(0.95);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .send-icon {
   width: 20px;
   height: 20px;
+}
+
+/* Send button loader */
+.send-loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ==================== Mobile Responsive ==================== */
