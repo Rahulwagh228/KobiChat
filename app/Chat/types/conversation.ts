@@ -23,8 +23,7 @@ export interface Message {
 }
 
 export interface CreateConversationPayload {
-  participantEmail?: string;
-  participantId?: string;
+  ParticipantEmailOrName?: string;
 }
 
 export interface ConversationResponse {

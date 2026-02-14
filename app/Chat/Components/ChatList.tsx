@@ -74,7 +74,7 @@ export default function ChatList({
                   />
                 ) : (
                   <div className="avatar-placeholder">
-                    {conversation.participantName.charAt(0).toUpperCase()}
+                    {conversation?.participantName?.charAt(0).toUpperCase()}
                   </div>
                 )}
                 {conversation.unreadCount ? (

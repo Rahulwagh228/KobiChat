@@ -14,7 +14,14 @@ export default function AuthPage() {
 
   // Check if user is already logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = (() => {
+      try {
+        const kobiData = localStorage.getItem('Kobi');
+        return kobiData ? JSON.parse(kobiData).token : null;
+      } catch {
+        return null;
+      }
+    })();
     if (token) {
       router.push('/Chat');
     }

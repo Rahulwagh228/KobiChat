@@ -15,12 +15,29 @@ export default function ChatPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showMobileList, setShowMobileList] = useState(true);
   const router = useRouter();
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token = (() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const kobiData = localStorage.getItem('Kobi');
+        return kobiData ? JSON.parse(kobiData).token : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  })();
 
   // Check authentication and load conversations
   useEffect(() => {
     const checkAuth = async () => {
-      const authToken = localStorage.getItem('token');
+      let authToken: string | null = null;
+      try {
+        const kobiData = localStorage.getItem('Kobi');
+        authToken = kobiData ? JSON.parse(kobiData).token : null;
+      } catch (error) {
+        console.error('Error parsing Kobi auth:', error);
+      }
+      
       if (!authToken) {
         router.push('/auth');
         return;
@@ -66,7 +83,7 @@ export default function ChatPage() {
 
       // Create new conversation
       const newConversation = await createConversation(
-        { participantEmail },
+        { ParticipantEmailOrName: participantEmail },
         token
       );
 
@@ -81,8 +98,7 @@ export default function ChatPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('Kobi');
     router.push('/auth');
   };
 

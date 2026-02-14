@@ -58,8 +58,11 @@ export default function LoginForm({ onSwitchToSignup, onLoginSuccess, isLoading 
       }
 
       if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user || {}));
+        const kobiAuth = {
+          token: data.token,
+          user: data.user || { id: "", username: "", email: "" },
+        };
+        localStorage.setItem("Kobi", JSON.stringify(kobiAuth));
         onLoginSuccess(data.token);
       }
     } catch (err) {

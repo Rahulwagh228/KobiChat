@@ -27,7 +27,17 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
   const [inputValue, setInputValue] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token = (() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const kobiData = localStorage.getItem('Kobi');
+        return kobiData ? JSON.parse(kobiData).token : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  })();
 
   // Initialize socket connection
   const { socket, isConnected, isLoading, sendMessage } = useSocket(token, {
@@ -72,10 +82,19 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
           token
         );
         // Convert fetched messages to Message format
+        const currentUserId = (() => {
+          try {
+            const kobiData = localStorage.getItem('Kobi');
+            return kobiData ? JSON.parse(kobiData).user?.id : null;
+          } catch {
+            return null;
+          }
+        })();
+        
         const formattedMessages: Message[] = (fetchedMessages || []).map((msg: any) => ({
           id: msg.id,
           text: msg.text,
-          sender: msg.senderId === localStorage.getItem('userId') ? 'user' : 'other',
+          sender: msg.senderId === currentUserId ? 'user' : 'other',
           timestamp: new Date(msg.timestamp).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit'

@@ -23,6 +23,15 @@ interface AuthResponse {
   };
 }
 
+interface KobiAuth {
+  token: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
+}
+
 class AuthService {
   private apiBase: string;
   private signupEndpoint: string;
@@ -81,21 +90,64 @@ class AuthService {
     }
   }
 
-  storeToken(token: string): void {
-    localStorage.setItem("token", token);
+  storeToken(token: string, user?: { id: string; username: string; email: string }): void {
+    if (typeof window !== "undefined") {
+      const kobiAuth: KobiAuth = {
+        token,
+        user: user || { id: "", username: "", email: "" },
+      };
+      localStorage.setItem("Kobi", JSON.stringify(kobiAuth));
+    }
   }
 
   getToken(): string | null {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("token");
+      try {
+        const kobiData = localStorage.getItem("Kobi");
+        if (kobiData) {
+          const parsed: KobiAuth = JSON.parse(kobiData);
+          return parsed.token || null;
+        }
+      } catch (error) {
+        console.error("Error parsing Kobi auth data:", error);
+      }
+    }
+    return null;
+  }
+
+  getUser(): { id: string; username: string; email: string } | null {
+    if (typeof window !== "undefined") {
+      try {
+        const kobiData = localStorage.getItem("Kobi");
+        if (kobiData) {
+          const parsed: KobiAuth = JSON.parse(kobiData);
+          return parsed.user || null;
+        }
+      } catch (error) {
+        console.error("Error parsing Kobi auth data:", error);
+      }
+    }
+    return null;
+  }
+
+  getUserId(): string | null {
+    if (typeof window !== "undefined") {
+      try {
+        const kobiData = localStorage.getItem("Kobi");
+        if (kobiData) {
+          const parsed: KobiAuth = JSON.parse(kobiData);
+          return parsed.user?.id || null;
+        }
+      } catch (error) {
+        console.error("Error parsing Kobi auth data:", error);
+      }
     }
     return null;
   }
 
   removeToken(): void {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      localStorage.removeItem("Kobi");
     }
   }
 

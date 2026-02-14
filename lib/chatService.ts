@@ -15,7 +15,7 @@ export const getUserConversations = async (token: string): Promise<Conversation[
 
     if (!response.ok) {
       if (response.status === 401) {
-        localStorage.removeItem('token');
+        localStorage.removeItem('Kobi');
         window.location.href = '/auth';
       }
       throw new Error('Failed to fetch conversations');
@@ -74,7 +74,7 @@ export const createConversation = async (
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
+    if (response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to create conversation');
     }
