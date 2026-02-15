@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Conversation } from '../types/conversation';
+import { Conversation, getParticipantName } from '../types/conversation';
 
 interface ChatListProps {
   conversations: Conversation[];
@@ -22,10 +22,9 @@ export default function ChatList({
   const [filteredChats, setFilteredChats] = useState<Conversation[]>(conversations);
 
   useEffect(() => {
-    // Filter conversations by participant name or email
+    // Filter conversations by participant name
     const filtered = conversations.filter(conv =>
-      conv.participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conv.participantEmail.toLowerCase().includes(searchQuery.toLowerCase())
+      getParticipantName(conv).toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredChats(filtered);
   }, [searchQuery, conversations]);
@@ -59,22 +58,24 @@ export default function ChatList({
             <p>{searchQuery ? 'No chats found' : 'No chats yet. Start one!'}</p>
           </div>
         ) : (
-          filteredChats.map((conversation) => (
+          filteredChats.map((conversation) => {
+            const participantName = getParticipantName(conversation);
+            return (
             <div
-              key={conversation.id}
-              className={`chat-item ${selectedChatId === conversation.id ? 'active' : ''}`}
-              onClick={() => handleChatClick(conversation.id)}
+              key={conversation._id}
+              className={`chat-item ${selectedChatId === conversation._id ? 'active' : ''}`}
+              onClick={() => handleChatClick(conversation._id)}
             >
               {/* Avatar */}
               <div className="chat-item-avatar">
-                {conversation.participantAvatar ? (
+                {conversation.participants[0]?.avatar ? (
                   <img 
-                    src={conversation.participantAvatar} 
-                    alt={conversation.participantName}
+                    src={conversation.participants[0].avatar} 
+                    alt={participantName}
                   />
                 ) : (
                   <div className="avatar-placeholder">
-                    {conversation?.participantName?.charAt(0).toUpperCase()}
+                    {participantName?.charAt(0).toUpperCase()}
                   </div>
                 )}
                 {conversation.unreadCount ? (
@@ -85,7 +86,7 @@ export default function ChatList({
               {/* Chat Info */}
               <div className="chat-item-content">
                 <div className="chat-item-header">
-                  <h3 className="chat-item-name">{conversation.participantName}</h3>
+                  <h3 className="chat-item-name">{participantName}</h3>
                   <span className="chat-item-time">{conversation.lastMessageTime}</span>
                 </div>
                 <p className="chat-item-message">
@@ -93,7 +94,8 @@ export default function ChatList({
                 </p>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

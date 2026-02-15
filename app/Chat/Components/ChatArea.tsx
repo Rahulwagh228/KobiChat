@@ -4,7 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSocket } from '@/lib/SocketHandler';
 import { Message as SocketMessage } from '@/lib/SocketHandler/types';
 import { getConversationMessages } from '@/lib/chatService';
-import { Conversation, Message as ChatMessage } from '../types/conversation';
+import { Conversation, Message as ChatMessage, getParticipantId } from '../types/conversation';
+
+const getParticipantName = (conversation: Conversation): string => {
+  return conversation.participants[0]?.username || 'Unknown User';
+};
 
 interface Message {
   id: string;
@@ -45,7 +49,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
       console.log('📨 New message received:', receivedMessage);
       
       // Only add message if it's for the current conversation
-      if (receivedMessage.conversationId === selectedConversation?.id) {
+      if (receivedMessage.conversationId === selectedConversation?._id) {
         const newMessage: Message = {
           id: receivedMessage.id,
           text: receivedMessage.text,
@@ -78,7 +82,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
       setIsLoadingMessages(true);
       try {
         const fetchedMessages = await getConversationMessages(
-          selectedConversation.id,
+          selectedConversation._id,
           token
         );
         // Convert fetched messages to Message format
@@ -127,7 +131,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
 
     try {
       // Send message via socket with conversation ID
-      await sendMessage(messageText, selectedConversation.participantId, selectedConversation.id);
+      await sendMessage(messageText, getParticipantId(selectedConversation), selectedConversation._id);
 
       // Add message to local state immediately (optimistic update)
       const newMessage: Message = {
@@ -195,8 +199,8 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
           </button>
         )}
         <div className="chat-header-info">
-          <h2 className="chat-header-name">{selectedConversation.participantName}</h2>
-          <p className="chat-header-email">{selectedConversation.participantEmail}</p>
+          <h2 className="chat-header-name">{getParticipantName(selectedConversation)}</h2>
+          <p className="chat-header-email">{selectedConversation.participants[0]?.email || 'No email'}</p>
         </div>
       </div>
 

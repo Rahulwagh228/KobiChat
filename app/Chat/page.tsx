@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import ChatList from './Components/ChatList';
 import ChatArea from './Components/ChatArea';
 import NewChatInput from './Components/NewChatInput';
-import { Conversation } from './types/conversation';
+import { Conversation, getParticipantName } from './types/conversation';
 import { getUserConversations, createConversation } from '@/lib/chatService';
 
 export default function ChatPage() {
@@ -71,8 +71,7 @@ export default function ChatPage() {
       // Check if conversation already exists
       const existingChat = conversations.find(
         conv =>
-          conv.participantEmail.toLowerCase() === participantEmail.toLowerCase() ||
-          conv.participantName.toLowerCase() === participantEmail.toLowerCase()
+          getParticipantName(conv).toLowerCase() === participantEmail.toLowerCase()
       );
 
       if (existingChat) {
@@ -145,12 +144,13 @@ export default function ChatPage() {
           isLoading={isLoading}
         />
 
+
         {/* Chat List */}
         <ChatList
           conversations={conversations}
-          selectedChatId={selectedConversation?.id || null}
+          selectedChatId={selectedConversation?._id || null}
           onChatSelect={(id) => {
-            const chat = conversations.find(c => c.id === id);
+            const chat = conversations.find(c => c._id === id);
             setSelectedConversation(chat || null);
             setShowMobileList(false);
           }}

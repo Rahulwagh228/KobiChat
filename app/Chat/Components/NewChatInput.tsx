@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Conversation, CreateConversationPayload } from '../types/conversation';
+import { Conversation, CreateConversationPayload, getParticipantName } from '../types/conversation';
 
 interface NewChatInputProps {
   onCreateChat: (participantEmail: string) => Promise<Conversation | null>;
@@ -28,8 +28,7 @@ export default function NewChatInput({
     // Check if participant already exists in conversations
     const existingChat = existingChats.find(
       conv =>
-        conv.participantEmail.toLowerCase() === inputValue.toLowerCase() ||
-        conv.participantName.toLowerCase() === inputValue.toLowerCase()
+        getParticipantName(conv).toLowerCase() === inputValue.toLowerCase()
     );
 
     if (existingChat) {

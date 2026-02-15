@@ -23,7 +23,7 @@ export const getUserConversations = async (token: string): Promise<Conversation[
 
     const data = await response.json();
     // Map API response to Conversation interface
-    return data.conversations || data || [];
+    return data.conversations || [];
   } catch (error) {
     console.error('Error fetching conversations:', error);
     throw error;
@@ -52,7 +52,7 @@ export const getConversationMessages = async (
     }
 
     const data = await response.json();
-    return data.messages || data || [];
+    return data.messages || [];
   } catch (error) {
     console.error('Error fetching messages:', error);
     throw error;
@@ -74,13 +74,13 @@ export const createConversation = async (
       body: JSON.stringify(payload),
     });
 
-    if (response.ok) {
+    if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to create conversation');
     }
 
     const data = await response.json();
-    return data.conversation || data;
+    return data.conversation || data.data || data;
   } catch (error) {
     console.error('Error creating conversation:', error);
     throw error;
