@@ -23,7 +23,18 @@ export const getUserConversations = async (token: string): Promise<Conversation[
 
     const data = await response.json();
     // Map API response to Conversation interface
-    return data.conversations || [];
+    const conversations = data.conversations || [];
+    
+    // Transform conversations to ensure proper structure
+    return conversations.map((conv: any) => ({
+      _id: conv._id,
+      participants: conv.participants || [],
+      createdAt: conv.createdAt,
+      updatedAt: conv.updatedAt,
+      lastMessage: typeof conv.lastMessage === 'string' ? conv.lastMessage : (conv.lastMessage?.content || 'No messages yet'),
+      lastMessageTime: conv.lastMessageTime,
+      unreadCount: conv.unreadCount,
+    }));
   } catch (error) {
     console.error('Error fetching conversations:', error);
     throw error;
@@ -109,3 +120,4 @@ export const getAllConversationPeople = async (token: string): Promise<any[]> =>
     throw error;
   }
 };
+

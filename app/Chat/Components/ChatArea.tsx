@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSocket } from '@/lib/SocketHandler';
 import { Message as SocketMessage } from '@/lib/SocketHandler/types';
 import { getConversationMessages } from '@/lib/chatService';
@@ -43,31 +43,51 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
     return null;
   })();
 
-  // Initialize socket connection
-  const { socket, isConnected, isLoading, sendMessage } = useSocket(token, {
-    onMessageReceive: (receivedMessage: SocketMessage) => {
+  // Initialize socket connection with memoized callbacks
+  const handleMessageReceive = useCallback(
+    (receivedMessage: SocketMessage) => {
       console.log('📨 New message received:', receivedMessage);
-      
+
+      // Get current user ID
+      const currentUserId = (() => {
+        try {
+          const kobiData = localStorage.getItem('Kobi');
+          return kobiData ? JSON.parse(kobiData).user?._id : null;
+        } catch {
+          return null;
+        }
+      })();
+
       // Only add message if it's for the current conversation
       if (receivedMessage.conversationId === selectedConversation?._id) {
+        const isCurrentUser = receivedMessage.senderId === currentUserId;
+        
         const newMessage: Message = {
           id: receivedMessage.id,
           text: receivedMessage.text,
-          sender: 'other',
+          sender: isCurrentUser ? 'user' : 'other',
           timestamp: new Date(receivedMessage.timestamp).toLocaleTimeString([], {
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            hour12: true,
           }),
           senderId: receivedMessage.senderId,
-          senderName: receivedMessage.senderName
+          senderName: receivedMessage.senderName,
         };
-        
-        setMessages(prev => [...prev, newMessage]);
+
+        setMessages((prev) => [...prev, newMessage]);
       }
     },
-    onError: (error) => {
-      console.error('Socket error:', error);
-    }
+    [selectedConversation?._id]
+  );
+
+  const handleSocketError = useCallback((error: any) => {
+    console.error('Socket error:', error);
+  }, []);
+
+  const { socket, isConnected, isLoading, sendMessage } = useSocket(token, {
+    onMessageReceive: handleMessageReceive,
+    onError: handleSocketError,
   });
 
   // Load messages when conversation changes
@@ -85,27 +105,38 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
           selectedConversation._id,
           token
         );
-        // Convert fetched messages to Message format
+        
+        // Get current user ID from localStorage
         const currentUserId = (() => {
           try {
             const kobiData = localStorage.getItem('Kobi');
-            return kobiData ? JSON.parse(kobiData).user?.id : null;
+            return kobiData ? JSON.parse(kobiData).user?._id : null;
           } catch {
             return null;
           }
         })();
         
-        const formattedMessages: Message[] = (fetchedMessages || []).map((msg: any) => ({
-          id: msg.id,
-          text: msg.text,
-          sender: msg.senderId === currentUserId ? 'user' : 'other',
-          timestamp: new Date(msg.timestamp).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-          senderId: msg.senderId,
-          senderName: msg.senderName
-        }));
+        console.log('Current User ID:', currentUserId);
+        
+        // Convert fetched messages to Message format
+        const formattedMessages: Message[] = (fetchedMessages || []).map((msg: any) => {
+          const senderId = msg.senderInfo?._id || msg.senderId;
+          const isCurrentUser = senderId === currentUserId;
+          
+          return {
+            id: msg._id,
+            text: msg.content,
+            sender: isCurrentUser ? 'user' : 'other',
+            timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+            }),
+            senderId: senderId,
+            senderName: msg.sender
+          };
+        });
+        
         setMessages(formattedMessages);
       } catch (error) {
         console.error('Error loading messages:', error);
@@ -126,6 +157,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
     if (!inputValue.trim() || !isConnected || isSending || !selectedConversation) return;
 
     const messageText = inputValue.trim();
+    // console.log('Attempting to send message:', messageText);
     setInputValue('');
     setIsSending(true);
 
@@ -140,7 +172,8 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
         sender: 'user',
         timestamp: new Date().toLocaleTimeString([], {
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          hour12: true
         }),
         senderName: 'You'
       };
@@ -206,17 +239,33 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
 
       {/* Messages Container */}
       <div className="messages-container">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`message-wrapper ${message.sender}`}
-          >
-            <div className={`message-bubble message-${message.sender}`}>
-              <p className="message-text">{message.text}</p>
-              <span className="message-time">{message.timestamp}</span>
+        {messages.map((message) => {
+          // Get current logged-in user ID from auth
+          const currentUserId = (() => {
+            try {
+              const kobiData = localStorage.getItem('Kobi');
+              return kobiData ? JSON.parse(kobiData).user?.id : null;
+            } catch {
+              return null;
+            }
+          })();
+
+          // Check if this message is from the logged-in user
+          const isCurrentUserMessage = message.senderId === currentUserId ;
+          console.log(isCurrentUserMessage, "gobiiiiiiiiiii", message.senderId, currentUserId);
+
+          return (
+            <div
+              key={message.id}
+              className={`message-wrapper ${isCurrentUserMessage ? 'user' : 'other'}`}
+            >
+              <div className={`message-bubble message-${isCurrentUserMessage ? 'user' : 'other'}`}>
+                <p className="message-text">{message.text}</p>
+                <span className="message-time">{message.timestamp}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
 

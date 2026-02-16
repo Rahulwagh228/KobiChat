@@ -17,7 +17,8 @@ interface SignupData {
 interface AuthResponse {
   token: string;
   user?: {
-    id: string;
+    id?: string;
+    _id?: string;
     username: string;
     email: string;
   };
@@ -26,7 +27,8 @@ interface AuthResponse {
 interface KobiAuth {
   token: string;
   user: {
-    id: string;
+    id?: string;
+    _id?: string;
     username: string;
     email: string;
   };
@@ -90,7 +92,7 @@ class AuthService {
     }
   }
 
-  storeToken(token: string, user?: { id: string; username: string; email: string }): void {
+  storeToken(token: string, user?: { id?: string; _id?: string; username: string; email: string }): void {
     if (typeof window !== "undefined") {
       const kobiAuth: KobiAuth = {
         token,
@@ -115,7 +117,7 @@ class AuthService {
     return null;
   }
 
-  getUser(): { id: string; username: string; email: string } | null {
+  getUser(): { id?: string; _id?: string; username: string; email: string } | null {
     if (typeof window !== "undefined") {
       try {
         const kobiData = localStorage.getItem("Kobi");
@@ -136,7 +138,8 @@ class AuthService {
         const kobiData = localStorage.getItem("Kobi");
         if (kobiData) {
           const parsed: KobiAuth = JSON.parse(kobiData);
-          return parsed.user?.id || null;
+          // Support both id and _id fields from API
+          return parsed.user?._id || parsed.user?.id || null;
         }
       } catch (error) {
         console.error("Error parsing Kobi auth data:", error);

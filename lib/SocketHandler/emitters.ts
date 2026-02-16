@@ -6,6 +6,47 @@
 import { Socket } from 'socket.io-client';
 
 /**
+ * Authenticate socket with server
+ * Must be called after socket connection is established
+ * 
+ * How it works:
+ * 1. Client emits 'auth' event with JWT token to server
+ * 2. Server verifies the token and gets user ID
+ * 3. Server tracks online users and sets up socket rooms
+ * 4. Client receives acknowledgment with success status
+ * 
+ * @param socket - Socket instance
+ * @param token - JWT authentication token
+ * @returns Promise that resolves when authenticated or rejects on error
+ */
+export const authenticateSocket = async (
+  socket: Socket,
+  token: string
+): Promise<{ userId: string; success: boolean }> => {
+  return new Promise((resolve, reject) => {
+    if (!socket.connected) {
+      reject(new Error('Socket not connected'));
+      return;
+    }
+
+    console.log('🔐 Authenticating socket with server...');
+
+    socket.emit('auth', { token }, (acknowledgment: any) => {
+      if (acknowledgment?.success) {
+        console.log('✅ Socket authenticated successfully. User ID:', acknowledgment?.userId);
+        resolve({
+          userId: acknowledgment.userId,
+          success: true,
+        });
+      } else {
+        console.error('❌ Socket authentication failed:', acknowledgment?.error);
+        reject(new Error(acknowledgment?.error || 'Authentication failed'));
+      }
+    });
+  });
+};
+
+/**
  * Send a message via socket
  * 
  * How it works:
@@ -38,6 +79,8 @@ export const sendMessage = async (
       conversationId,
       timestamp: new Date().toISOString(),
     };
+
+    // console.log('📤 Sending message via socket:', messageData);
 
     console.log('📤 Sending message via socket:', messageData);
 
