@@ -83,7 +83,32 @@ export const unsubscribeFromSocket = (subscriberId: string) => {
 const setupSocketListeners = (socket: Socket) => {
   console.log('🔌 Setting up socket listeners (global, once)...');
 
-  // Listen for incoming messages
+  // Listen for incoming messages from the backend 'new-message' event
+  socket.on('new-message', (data: any) => {
+    console.log('📨 New message received from backend:', data);
+    
+    const messagePayload = data.message || data;
+    const conversationId = data.conversationId || messagePayload.conversationId;
+    
+    // Transform backend message to our Message format
+    const message: Message = {
+      id: messagePayload._id || messagePayload.id,
+      text: messagePayload.text,
+      timestamp: new Date(messagePayload.createdAt || messagePayload.timestamp).toISOString(),
+      senderId: messagePayload.sender || messagePayload.senderId,
+      senderName: messagePayload.senderName || 'Unknown',
+      conversationId: conversationId,
+    };
+    
+    console.log('📨 Transformed message:', message.text.substring(0, 50));
+    
+    // Notify all subscribers
+    subscribers.forEach((subscriber) => {
+      subscriber.onMessageReceive?.(message);
+    });
+  });
+
+  // Listen for incoming messages from 'message:receive' event (fallback)
   socket.on('message:receive', (message: Message) => {
     console.log('📨 Message received:', message.text.substring(0, 50));
     subscribers.forEach((subscriber) => {

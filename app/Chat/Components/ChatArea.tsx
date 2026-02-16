@@ -85,10 +85,28 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
     console.error('Socket error:', error);
   }, []);
 
-  const { socket, isConnected, isLoading, sendMessage } = useSocket(token, {
+  const { socket, isConnected, isLoading, sendMessage, joinConversation: socketJoinConversation, leaveConversation: socketLeaveConversation } = useSocket(token, {
     onMessageReceive: handleMessageReceive,
     onError: handleSocketError,
   });
+
+  // Join/Leave conversation when it changes
+  useEffect(() => {
+    if (!isConnected || !socket || !selectedConversation) {
+      return;
+    }
+
+    console.log('👤 Joining conversation:', selectedConversation._id);
+    socketJoinConversation(selectedConversation._id);
+
+    // Cleanup: Leave conversation when unmounting or changing conversation
+    return () => {
+      if (selectedConversation) {
+        console.log('👤 Leaving conversation:', selectedConversation._id);
+        socketLeaveConversation(selectedConversation._id);
+      }
+    };
+  }, [isConnected, socket, selectedConversation, socketJoinConversation, socketLeaveConversation]);
 
   // Load messages when conversation changes
   useEffect(() => {
@@ -244,15 +262,14 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
           const currentUserId = (() => {
             try {
               const kobiData = localStorage.getItem('Kobi');
-              return kobiData ? JSON.parse(kobiData).user?.id : null;
+              return kobiData ? JSON.parse(kobiData).user?._id : null;
             } catch {
               return null;
             }
           })();
 
           // Check if this message is from the logged-in user
-          const isCurrentUserMessage = message.senderId === currentUserId ;
-          console.log(isCurrentUserMessage, "gobiiiiiiiiiii", message.senderId, currentUserId);
+          const isCurrentUserMessage = message.senderId === currentUserId;
 
           return (
             <div
