@@ -91,16 +91,23 @@ const setupSocketListeners = (socket: Socket) => {
     const conversationId = data.conversationId || messagePayload.conversationId;
     
     // Transform backend message to our Message format
+    // Handle both historical and real-time message structures
+    const senderId = messagePayload.senderInfo?._id || messagePayload.sender || messagePayload.senderId;
+    
     const message: Message = {
       id: messagePayload._id || messagePayload.id,
-      text: messagePayload.text,
+      text: messagePayload.text || messagePayload.content,
       timestamp: new Date(messagePayload.createdAt || messagePayload.timestamp).toISOString(),
-      senderId: messagePayload.sender || messagePayload.senderId,
-      senderName: messagePayload.senderName || 'Unknown',
+      senderId: senderId,
+      senderName: messagePayload.senderName || messagePayload.sender || 'Unknown',
       conversationId: conversationId,
     };
     
-    console.log('📨 Transformed message:', message.text.substring(0, 50));
+    console.log('📨 Transformed message:', {
+      text: message.text.substring(0, 50),
+      senderId: message.senderId,
+      conversationId: message.conversationId
+    });
     
     // Notify all subscribers
     subscribers.forEach((subscriber) => {

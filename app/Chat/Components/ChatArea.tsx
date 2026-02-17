@@ -184,6 +184,15 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
       await sendMessage(messageText, getParticipantId(selectedConversation), selectedConversation._id);
 
       // Add message to local state immediately (optimistic update)
+      const currentUserId = (() => {
+        try {
+          const kobiData = localStorage.getItem('Kobi');
+          return kobiData ? JSON.parse(kobiData).user?.id : null;
+        } catch {
+          return null;
+        }
+      })();
+
       const newMessage: Message = {
         id: Date.now().toString(),
         text: messageText,
@@ -193,6 +202,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
           minute: '2-digit',
           hour12: true
         }),
+        senderId: currentUserId || undefined,
         senderName: 'You'
       };
 
