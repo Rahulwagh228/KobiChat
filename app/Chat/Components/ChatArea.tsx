@@ -46,7 +46,6 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
   // Initialize socket connection with memoized callbacks
   const handleMessageReceive = useCallback(
     (receivedMessage: SocketMessage) => {
-      console.log('📨 New message received:', receivedMessage);
 
       // Get current user ID
       const currentUserId = (() => {
@@ -96,13 +95,12 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
       return;
     }
 
-    console.log('👤 Joining conversation:', selectedConversation._id);
     socketJoinConversation(selectedConversation._id);
 
     // Cleanup: Leave conversation when unmounting or changing conversation
     return () => {
       if (selectedConversation) {
-        console.log('👤 Leaving conversation:', selectedConversation._id);
+        // console.log('👤 Leaving conversation:', selectedConversation._id);
         socketLeaveConversation(selectedConversation._id);
       }
     };
@@ -134,7 +132,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
           }
         })();
         
-        console.log('Current User ID:', currentUserId);
+        // console.log('Current User ID:', currentUserId);
         
         // Convert fetched messages to Message format
         const formattedMessages: Message[] = (fetchedMessages || []).map((msg: any) => {
@@ -207,7 +205,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
       };
 
       setMessages(prev => [...prev, newMessage]);
-      console.log('✅ Message sent successfully');
+      // console.log('✅ Message sent successfully');
     } catch (error) {
       console.error('Failed to send message:', error);
       alert('Failed to send message. Please try again.');
@@ -280,7 +278,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
 
           // Check if this message is from the logged-in user
           const isCurrentUserMessage = message.senderId === currentUserId;
-          console.log(isCurrentUserMessage, 'Is current user message:', message, currentUserId);
+          // console.log(isCurrentUserMessage, 'Is current user message:', message, currentUserId);
 
           return (
             <div

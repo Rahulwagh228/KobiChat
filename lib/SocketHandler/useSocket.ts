@@ -73,7 +73,7 @@ export function useSocket(token: string | null, options: UseSocketOptions = {}) 
   // Initialize socket connection ONCE per token
   useEffect(() => {
     if (!token) {
-      console.log('⚠️ No token available, cannot initialize socket');
+      // console.log('⚠️ No token available, cannot initialize socket');
       setIsLoading(false);
       return;
     }
@@ -82,7 +82,7 @@ export function useSocket(token: string | null, options: UseSocketOptions = {}) 
 
     const initSocket = async () => {
       try {
-        console.log(`🚀 useSocket initializing for ${hookIdRef.current}`);
+        // console.log(`🚀 useSocket initializing for ${hookIdRef.current}`);
 
         // Initialize socket (singleton - only creates once)
         const initializedSocket = await initializeSocket(token);

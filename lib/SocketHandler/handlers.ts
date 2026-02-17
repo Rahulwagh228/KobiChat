@@ -45,7 +45,7 @@ export const subscribeToSocket = (
 ) => {
   // Register this subscriber
   subscribers.set(subscriberId, { id: subscriberId, ...handlers });
-  console.log(`📝 Subscriber registered: ${subscriberId} (total: ${subscribers.size})`);
+  // console.log(`📝 Subscriber registered: ${subscriberId} (total: ${subscribers.size})`);
 
   // Setup socket listeners ONCE - not per subscription
   if (!listenersSetup) {
@@ -67,7 +67,7 @@ export const subscribeToSocket = (
 export const unsubscribeFromSocket = (subscriberId: string) => {
   const deleted = subscribers.delete(subscriberId);
   if (deleted) {
-    console.log(`🗑️ Subscriber removed: ${subscriberId} (remaining: ${subscribers.size})`);
+    // console.log(`🗑️ Subscriber removed: ${subscriberId} (remaining: ${subscribers.size})`);
   }
 
   // Keep listeners active as long as there are subscribers
@@ -81,11 +81,11 @@ export const unsubscribeFromSocket = (subscriberId: string) => {
  * @param socket - Socket instance
  */
 const setupSocketListeners = (socket: Socket) => {
-  console.log('🔌 Setting up socket listeners (global, once)...');
+  // console.log('🔌 Setting up socket listeners (global, once)...');
 
   // Listen for incoming messages from the backend 'new-message' event
   socket.on('new-message', (data: any) => {
-    console.log('📨 New message received from backend:', data);
+    // console.log('📨 New message received from backend:', data);
     
     const messagePayload = data.message || data;
     const conversationId = data.conversationId || messagePayload.conversationId;
@@ -103,11 +103,11 @@ const setupSocketListeners = (socket: Socket) => {
       conversationId: conversationId,
     };
     
-    console.log('📨 Transformed message:', {
-      text: message.text.substring(0, 50),
-      senderId: message.senderId,
-      conversationId: message.conversationId
-    });
+    // console.log('📨 Transformed message:', {
+    //   text: message.text.substring(0, 50),
+    //   senderId: message.senderId,
+    //   conversationId: message.conversationId
+    // });
     
     // Notify all subscribers
     subscribers.forEach((subscriber) => {
@@ -117,7 +117,7 @@ const setupSocketListeners = (socket: Socket) => {
 
   // Listen for incoming messages from 'message:receive' event (fallback)
   socket.on('message:receive', (message: Message) => {
-    console.log('📨 Message received:', message.text.substring(0, 50));
+    // console.log('📨 Message received:', message.text.substring(0, 50));
     subscribers.forEach((subscriber) => {
       subscriber.onMessageReceive?.(message);
     });
@@ -125,7 +125,7 @@ const setupSocketListeners = (socket: Socket) => {
 
   // Listen for user online status
   socket.on('user:online', (user: UserStatusChange) => {
-    console.log('✅ User online:', user.username);
+    // console.log('✅ User online:', user.username);
     subscribers.forEach((subscriber) => {
       subscriber.onUserOnline?.(user);
     });
@@ -133,7 +133,7 @@ const setupSocketListeners = (socket: Socket) => {
 
   // Listen for user offline status
   socket.on('user:offline', (user: UserStatusChange) => {
-    console.log('❌ User offline:', user.username);
+    // console.log('❌ User offline:', user.username);
     subscribers.forEach((subscriber) => {
       subscriber.onUserOffline?.(user);
     });
@@ -141,7 +141,7 @@ const setupSocketListeners = (socket: Socket) => {
 
   // Listen for typing indicator
   socket.on('user:typing', (data: TypingIndicator) => {
-    console.log('✏️ User typing:', data.userId);
+    // console.log('✏️ User typing:', data.userId);
     subscribers.forEach((subscriber) => {
       subscriber.onTyping?.(data);
     });
@@ -149,7 +149,7 @@ const setupSocketListeners = (socket: Socket) => {
 
   // Listen for online users list
   socket.on('online-users', (onlineUserIds: string[]) => {
-    console.log('👥 Online users updated:', onlineUserIds.length, 'users');
+    // console.log('👥 Online users updated:', onlineUserIds.length, 'users');
     subscribers.forEach((subscriber) => {
       subscriber.onOnlineUsers?.(onlineUserIds);
     });
@@ -179,7 +179,7 @@ const setupSocketListeners = (socket: Socket) => {
  * @param socket - Socket instance
  */
 export const removeSocketListeners = (socket: Socket) => {
-  console.log('🔌 Removing all socket listeners');
+  // console.log('🔌 Removing all socket listeners');
   socket.off('message:receive');
   socket.off('user:online');
   socket.off('user:offline');

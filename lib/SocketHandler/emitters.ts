@@ -29,11 +29,9 @@ export const authenticateSocket = async (
       return;
     }
 
-    console.log('🔐 Authenticating socket with server...');
 
     socket.emit('auth', { token }, (acknowledgment: any) => {
       if (acknowledgment?.success) {
-        console.log('✅ Socket authenticated successfully. User ID:', acknowledgment?.userId);
         resolve({
           userId: acknowledgment.userId,
           success: true,
@@ -82,12 +80,11 @@ export const sendMessage = async (
 
     // console.log('📤 Sending message via socket:', messageData);
 
-    console.log('📤 Sending message via socket:', messageData);
 
     // Emit message with callback to see if server received it
     socket.emit('message:send', messageData, (acknowledgment: any) => {
       if (acknowledgment?.success) {
-        console.log('✅ Message sent successfully');
+        // console.log('✅ Message sent successfully');
         resolve();
       } else {
         console.error('❌ Message send failed:', acknowledgment?.error);
@@ -117,7 +114,7 @@ export const sendTypingIndicator = (
     conversationId,
   });
 
-  console.log(`✏️ Typing status: ${isTyping ? 'typing' : 'stopped'}`);
+  // console.log(`✏️ Typing status: ${isTyping ? 'typing' : 'stopped'}`);
 };
 
 /**
@@ -135,7 +132,7 @@ export const markMessageAsRead = (socket: Socket, messageId: string): void => {
     readAt: new Date().toISOString(),
   });
 
-  console.log('✅ Message marked as read:', messageId);
+  // console.log('✅ Message marked as read:', messageId);
 };
 
 /**
@@ -152,7 +149,7 @@ export const joinConversation = (socket: Socket, conversationId: string): void =
     conversationId,
   });
 
-  console.log('📍 Joined conversation:', conversationId);
+  // console.log('📍 Joined conversation:', conversationId);
 };
 
 /**
@@ -169,7 +166,7 @@ export const leaveConversation = (socket: Socket, conversationId: string): void 
     conversationId,
   });
 
-  console.log('📍 Left conversation:', conversationId);
+  // console.log('📍 Left conversation:', conversationId);
 };
 
 /**
@@ -195,5 +192,5 @@ export const requestConversationHistory = (
     limit,
   });
 
-  console.log('📜 Requesting conversation history:', conversationId);
+  // console.log('📜 Requesting conversation history:', conversationId);
 };

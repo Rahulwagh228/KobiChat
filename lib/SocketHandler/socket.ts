@@ -25,19 +25,19 @@ let initPromise: Promise<Socket> | null = null;
 export const initializeSocket = async (token: string): Promise<Socket> => {
   // If socket already connected, reuse it
   if (socket?.connected) {
-    console.log('✅ Socket already connected, reusing instance');
+    // console.log('✅ Socket already connected, reusing instance');
     return socket;
   }
 
   // If initialization is in progress, wait for it
   if (isInitializing && initPromise) {
-    console.log('⏳ Socket initialization in progress, waiting...');
+    // console.log('⏳ Socket initialization in progress, waiting...');
     return initPromise;
   }
 
   // If socket exists but disconnected, clean it up and recreate
   if (socket && !socket.connected) {
-    console.log('🔄 Socket disconnected, cleaning up for reconnection...');
+    // console.log('🔄 Socket disconnected, cleaning up for reconnection...');
     socket.disconnect();
     socket = null;
     isInitializing = false;
@@ -51,7 +51,7 @@ export const initializeSocket = async (token: string): Promise<Socket> => {
     try {
       // Create socket if it doesn't exist
       if (!socket) {
-        console.log('🔧 Creating new socket connection...');
+        // console.log('🔧 Creating new socket connection...');
         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
           auth: {
             token: token,
@@ -70,7 +70,7 @@ export const initializeSocket = async (token: string): Promise<Socket> => {
 
         // Setup connection handlers ONCE
         socket.on('connect', () => {
-          console.log('🎉 Socket connected:', socket?.id);
+          // console.log('🎉 Socket connected:', socket?.id);
 
           // Set timeout for auth response (5 seconds)
           authTimeout = setTimeout(() => {
@@ -87,7 +87,7 @@ export const initializeSocket = async (token: string): Promise<Socket> => {
             if (authTimeout) clearTimeout(authTimeout);
             
             if (acknowledgment?.success) {
-              console.log('✅ Socket authenticated, User ID:', acknowledgment?.userId);
+              // console.log('✅ Socket authenticated, User ID:', acknowledgment?.userId);
               if (isInitializing) {
                 isInitializing = false;
                 initPromise = null;
@@ -105,7 +105,7 @@ export const initializeSocket = async (token: string): Promise<Socket> => {
         });
 
         socket.on('disconnect', () => {
-          console.log('❌ Socket disconnected');
+          // console.log('❌ Socket disconnected');
         });
 
         socket.on('connect_error', (error) => {
@@ -153,7 +153,7 @@ export const disconnectSocket = (): void => {
     socket = null;
     isInitializing = false;
     initPromise = null;
-    console.log('🔌 Socket disconnected and cleaned up');
+    // console.log('🔌 Socket disconnected and cleaned up');
   }
 };
 
