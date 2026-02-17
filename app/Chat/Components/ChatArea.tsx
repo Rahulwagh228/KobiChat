@@ -262,7 +262,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
           const currentUserId = (() => {
             try {
               const kobiData = localStorage.getItem('Kobi');
-              return kobiData ? JSON.parse(kobiData).user?._id : null;
+              return kobiData ? JSON.parse(kobiData).user?.id : null;
             } catch {
               return null;
             }
@@ -270,6 +270,7 @@ export default function ChatArea({ selectedConversation, onBackClick }: ChatArea
 
           // Check if this message is from the logged-in user
           const isCurrentUserMessage = message.senderId === currentUserId;
+          console.log(isCurrentUserMessage, 'Is current user message:', message, currentUserId);
 
           return (
             <div
