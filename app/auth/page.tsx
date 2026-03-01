@@ -1,16 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import LoginForm from './Components/LoginForm';
 import SignupForm from './Components/SignupForm';
 import FloatingStars from './Components/FloatingStars';
 import './styles/auth-page.scss';
 
-export default function AuthPage() {
+function AuthContent() {
   const [isLoginView, setIsLoginView] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Handle query params for view switching
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view === 'signup') {
+      setIsLoginView(false);
+    } else if (view === 'login') {
+      setIsLoginView(true);
+    }
+  }, [searchParams]);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -85,5 +96,13 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="auth-page-container"><p>Loading...</p></div>}>
+      <AuthContent />
+    </Suspense>
   );
 }
